@@ -14,7 +14,13 @@ public class RigidBody : Component
     public float Mass = 1f;
 
     private Vector2 _force;
-    public float SurfaceFriction { get; set; } = 1.0f;
+    public float CurrentFriction { get; set; } = 0.0f;
+    public bool UsesTileFriction { get; private set; }
+
+    public RigidBody(bool usesTileFriction = false)
+    {
+        UsesTileFriction = usesTileFriction;
+    }
 
     public void AddForce(Vector2 force)
     {
@@ -25,9 +31,8 @@ public class RigidBody : Component
     {
         Vector2 acceleration = _force / Mass;
         Velocity += acceleration * deltaTime;
-
-        float frictionStrength = SurfaceFriction;
-        Velocity -= Velocity * frictionStrength * deltaTime;
+        
+        Velocity -= Velocity * CurrentFriction * deltaTime;
 
         Vector2 forward = new(
             (float)Math.Cos(GameObject.Rotation - Math.PI / 2),

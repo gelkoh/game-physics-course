@@ -20,28 +20,24 @@ public class PhysicsWorld()
     {
         foreach (var body in RigidBodies)
         {
-            float friction = 1.0f;
-            Boolean foundTile = false;
-
-            foreach (var col in ActiveColliders)
-            {
-                if (col is BoxCollider box)
-                {
-                    if (IsPointInsideBox(body.GameObject.Position, box))
-                    {
-                        friction = box.Friction;
-                        foundTile = true;
-                        break;
-                    }
-                }
-            }
-
-            if (!foundTile)
-                friction = 6.0f;
-
-            body.SurfaceFriction = friction;
-            body.Integrate((float)deltaTime);
+            if (body.UsesTileFriction)
+                body.CurrentFriction = GetTileFrictionFor(body);
+                
+            body.Integrate((float)deltaTime);    
         }
+    }
+
+    private float GetTileFrictionFor(RigidBody body)
+    {
+        foreach (var col in ActiveColliders)
+        {
+            if (col is BoxCollider box && IsPointInsideBox(body.GameObject.Position, box))
+            {
+                return box.Friction;
+            }
+        }
+
+        return 6.0f; // default off-road friction
     }
 
     private bool IsPointInsideBox(Vector2 point, BoxCollider box)

@@ -77,7 +77,7 @@ namespace Racing
         {
             _carTemplate = new GameObject.Template([
                 new SpriteRenderer(Content.Load<Texture2D>("Sprites/car_yellow_1"), Color.White),
-                new RigidBody(),
+                new RigidBody(true),
                 new CarController(),
                 new PointCollider()
             ]);

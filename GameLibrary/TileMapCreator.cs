@@ -74,7 +74,7 @@ namespace GameLibrary
         {
             return new GameObject.Template([
                 new SpriteRenderer(texture),
-                new BoxCollider(tileWidth, tileHeight) { Friction = 2.0f }
+                new BoxCollider(tileWidth, tileHeight, 2.0f)
             ]);
         }
     }

@@ -5,9 +5,16 @@ namespace GameLibrary
 {
     public class BoxCollider : Collider
     {
-        public float Friction { get; set; }
         public int Width { get; private set; }
         public int Height { get; private set; }
+        public float Friction { get; private set; }
+
+        public BoxCollider(int width, int height, float friction)
+        {
+            Width = width;
+            Height = height;
+            Friction = friction;
+        }
 
         public BoxCollider(int width, int height)
         {

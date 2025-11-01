@@ -45,12 +45,8 @@ namespace GameLibrary
                 }
             }
 
-            if (state.IsKeyDown(Keys.A))
-            {
-                GameObject.Rotation -= 0.1f;
-            }
-            if (state.IsKeyDown(Keys.D))
-                GameObject.Rotation += 0.1f;
+            if (state.IsKeyDown(Keys.A)) GameObject.Rotation -= 0.1f;
+            if (state.IsKeyDown(Keys.D)) GameObject.Rotation += 0.1f;
         }
     }
 }
