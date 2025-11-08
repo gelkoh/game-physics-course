@@ -1,16 +1,11 @@
-using GameLibrary.Physics;
 using Microsoft.Xna.Framework;
 
-namespace GameLibrary
+namespace GameLibrary.Physics;
+
+public class PointCollider : Collider
 {
-    public class PointCollider : Collider
+    public override Vector2 Position
     {
-        public override Vector2 Position
-        {
-            get
-            {
-                return GameObject.Position;
-            }
-        }
+        get => GameObject.Position;
     }
 }

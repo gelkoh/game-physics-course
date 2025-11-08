@@ -12,16 +12,9 @@ public class RigidBody : Component
 {
     public Vector2 Velocity { get; set; }
     public float Mass = 1f;
-
     private Vector2 _force;
     public float CurrentFriction { get; set; } = 0.0f;
-    public bool UsesTileFriction { get; private set; }
-
-    public RigidBody(bool usesTileFriction = false)
-    {
-        UsesTileFriction = usesTileFriction;
-    }
-
+    
     public void AddForce(Vector2 force)
     {
         _force += force;
@@ -30,11 +23,11 @@ public class RigidBody : Component
     public void Integrate(float deltaTime)
     {
         Vector2 acceleration = _force / Mass;
-        Velocity += acceleration * deltaTime;
         
+        Velocity += acceleration * deltaTime;
         Velocity -= Velocity * CurrentFriction * deltaTime;
 
-        Vector2 forward = new(
+        Vector2 forward = new Vector2(
             (float)Math.Cos(GameObject.Rotation - Math.PI / 2),
             (float)Math.Sin(GameObject.Rotation - Math.PI / 2)
         );

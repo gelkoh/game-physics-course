@@ -1,5 +1,6 @@
 using System.Collections.Generic;
 using System.IO;
+using GameLibrary.Physics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Content;
 using Microsoft.Xna.Framework.Graphics;
@@ -26,6 +27,7 @@ namespace GameLibrary
         {
             // Load the level and ensure all of the lines are the same length.
             List<string> lines = [];
+            
             using (StreamReader reader = new(fileStream))
             {
                 string line = reader.ReadLine();
@@ -62,6 +64,7 @@ namespace GameLibrary
                 { 'S', CreateTileTemplate(content.Load<Texture2D>("Tiles/RacingTileSet/road_asphalt41")) },
                 { 'W', CreateTileTemplate(content.Load<Texture2D>("Tiles/RacingTileSet/road_asphalt39")) }
             };
+            
             return tileCatalog;
         }
 

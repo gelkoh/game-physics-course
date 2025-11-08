@@ -18,11 +18,13 @@ namespace GameLibrary
             base.Connect(gameObject);
 
             _rigidBody = GameObject.GetComponent<RigidBody>();
+            
             if (_rigidBody == null)
                 throw new Exception("CharacterController could not find RigidBody component!");
 
             Core.Controllers.Add(this);
         }
+        
         public override void Destroy()
         {
             Core.Controllers.Remove(this);

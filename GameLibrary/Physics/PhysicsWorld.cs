@@ -1,4 +1,3 @@
-using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
@@ -20,8 +19,7 @@ public class PhysicsWorld()
     {
         foreach (var body in RigidBodies)
         {
-            if (body.UsesTileFriction)
-                body.CurrentFriction = GetTileFrictionFor(body);
+            body.CurrentFriction = GetTileFrictionFor(body);
                 
             body.Integrate((float)deltaTime);    
         }
