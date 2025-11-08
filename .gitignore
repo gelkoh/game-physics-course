@@ -63,3 +63,7 @@ monodroid*.msi
 *.VC.opendb
 
 artifacts/
+
+# Editor settings
+.idea/
+.vscode/
