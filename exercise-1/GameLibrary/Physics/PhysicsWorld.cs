@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using Microsoft.Xna.Framework;
 
@@ -10,6 +11,8 @@ public class PhysicsWorld()
 {
     public static readonly List<Collider> ActiveColliders = [];
     public static readonly List<RigidBody> RigidBodies = [];
+    
+    private static readonly float GRAVITY_MAGNITUDE = 9.81f;
 
     /// <summary>
     /// Gets called every frame.
@@ -20,7 +23,17 @@ public class PhysicsWorld()
         foreach (var body in RigidBodies)
         {
             body.CurrentFriction = GetTileFrictionFor(body);
-                
+            
+            float normalForceMagnitude = body.Mass * GRAVITY_MAGNITUDE;
+            float frictionMagnitude = body.CurrentFriction * normalForceMagnitude;
+
+            // Only apply friction if body is moving
+            if (body.Velocity.LengthSquared() > 0.001f)
+            {
+                Vector2 frictionVector = -Vector2.Normalize(body.Velocity) * frictionMagnitude;
+                body.AddForce(frictionVector);
+            }
+            
             body.Integrate((float)deltaTime);    
         }
     }
@@ -29,24 +42,12 @@ public class PhysicsWorld()
     {
         foreach (var col in ActiveColliders)
         {
-            if (col is BoxCollider box && IsPointInsideBox(body.GameObject.Position, box))
+            if (col is BoxCollider box && box.IsPointInsideBoxCollider(body.GameObject.Position, box))
             {
                 return box.Friction;
             }
         }
 
-        return 6.0f; // default off-road friction
-    }
-
-    private bool IsPointInsideBox(Vector2 point, BoxCollider box)
-    {
-        Vector2 pos = box.Position;
-        float halfW = box.Width / 2f;
-        float halfH = box.Height / 2f;
-
-        return point.X >= pos.X - halfW &&
-               point.X <= pos.X + halfW &&
-               point.Y >= pos.Y - halfH &&
-               point.Y <= pos.Y + halfH;
+        return 4f; // default off-road friction
     }
 }

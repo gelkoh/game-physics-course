@@ -6,10 +6,10 @@ namespace GameLibrary
 {
     public class CarController : CharacterController
     {
-        private const float FORWARD_ACCELERATION = 1000f;
-        private const float BACKWARD_ACCELERATION = FORWARD_ACCELERATION * 0.5f;
+        private const float FORWARD_ACCELERATION = 500f;
+        private const float BACKWARD_ACCELERATION = FORWARD_ACCELERATION * 0.75f;
         private const float MAX_SPEED = 500f;
-        private const float MAX_REVERSE_SPEED = MAX_SPEED * 0.5f;
+        private const float MAX_REVERSE_SPEED = MAX_SPEED * 0.75f;
             
         public override void HandleInput(KeyboardState state)
         {
@@ -17,38 +17,31 @@ namespace GameLibrary
                 (float)Math.Cos(GameObject.Rotation - (Math.PI / 2)),
                 (float)Math.Sin(GameObject.Rotation - (Math.PI / 2))
             );
-
-            float inputFactor = 0f;
-            float currentMaxSpeed = MAX_SPEED;
-            float currentAcceleration = FORWARD_ACCELERATION;
-
+            
+            Vector2 currentVelocity = _rigidBody.Velocity;
+            float currentSpeed = currentVelocity.Length();
+            
             if (state.IsKeyDown(Keys.W))
             {
-                inputFactor = 1f;
-                currentMaxSpeed = MAX_SPEED;
-                currentAcceleration = FORWARD_ACCELERATION;
+                _rigidBody.AddForce(1f * forward * FORWARD_ACCELERATION);
+                
+                if (currentSpeed > MAX_SPEED)
+                {
+                    _rigidBody.Velocity = Vector2.Normalize(currentVelocity) * MAX_SPEED;
+                }
             }
             else if (state.IsKeyDown(Keys.S))
             {
-                inputFactor = -1f;
-                currentMaxSpeed = MAX_REVERSE_SPEED;
-                currentAcceleration = BACKWARD_ACCELERATION;
-            }
-
-            if (inputFactor != 0)
-            {
-                if (_rigidBody.Velocity.Length() < currentMaxSpeed)
+                _rigidBody.AddForce(-1f * forward * BACKWARD_ACCELERATION);
+                
+                if (currentSpeed > MAX_REVERSE_SPEED)
                 {
-                    _rigidBody.AddForce(inputFactor * forward * currentAcceleration);
+                    _rigidBody.Velocity = Vector2.Normalize(currentVelocity) * MAX_REVERSE_SPEED;
                 }
-                else
-                {
-                    _rigidBody.Velocity = Vector2.Normalize(_rigidBody.Velocity) * currentMaxSpeed;
-                }
-            }
+            } 
             
             if (state.IsKeyDown(Keys.A)) GameObject.Rotation -= 0.1f;
-            if (state.IsKeyDown(Keys.D)) GameObject.Rotation += 0.1f;
+            else if (state.IsKeyDown(Keys.D)) GameObject.Rotation += 0.1f;
         }
     }
 }

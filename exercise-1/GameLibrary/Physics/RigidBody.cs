@@ -11,7 +11,7 @@ namespace GameLibrary.Physics;
 public class RigidBody : Component
 {
     public Vector2 Velocity { get; set; }
-    public float Mass = 1f;
+    public float Mass = 10f;
     private Vector2 _force;
     public float CurrentFriction { get; set; } = 0.0f;
     
@@ -19,14 +19,15 @@ public class RigidBody : Component
     {
         _force += force;
     }
-
+    
     public void Integrate(float deltaTime)
     {
-        Vector2 acceleration = _force / Mass;
-        
-        Velocity += acceleration * deltaTime;
-        Velocity -= Velocity * CurrentFriction * deltaTime;
+        GameObject.Position += Velocity * deltaTime;
 
+        Vector2 acceleration = _force / Mass;
+    
+        Velocity += acceleration * deltaTime;
+        
         Vector2 forward = new Vector2(
             (float)Math.Cos(GameObject.Rotation - Math.PI / 2),
             (float)Math.Sin(GameObject.Rotation - Math.PI / 2)
@@ -35,8 +36,6 @@ public class RigidBody : Component
         float forwardSpeed = Vector2.Dot(Velocity, forward);
 
         Velocity = forward * forwardSpeed;
-
-        GameObject.Position += Velocity * deltaTime;
 
         _force = Vector2.Zero;
     }

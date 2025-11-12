@@ -14,6 +14,18 @@ public class BoxCollider : Collider
         Height = height;
         Friction = friction;
     }
+    
+    public bool IsPointInsideBoxCollider(Vector2 point, BoxCollider box)
+    {
+        Vector2 pos = box.Position;
+        float halfW = box.Width / 2f;
+        float halfH = box.Height / 2f;
+
+        return point.X >= pos.X - halfW &&
+               point.X <= pos.X + halfW &&
+               point.Y >= pos.Y - halfH &&
+               point.Y <= pos.Y + halfH;
+    }
 
     public override Vector2 Position
     {
