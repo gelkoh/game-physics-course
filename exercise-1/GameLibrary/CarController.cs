@@ -30,7 +30,7 @@ namespace GameLibrary
             }
             else if (state.IsKeyDown(Keys.S))
             {
-                inputFactor = -0.5f;
+                inputFactor = -1f;
                 currentMaxSpeed = MAX_REVERSE_SPEED;
                 currentAcceleration = BACKWARD_ACCELERATION;
             }
