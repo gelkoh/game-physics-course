@@ -12,7 +12,7 @@ namespace GameLibrary.Physics;
 public class RigidBody(float Mass) : Component
 {
     public Vector2 Velocity { get; set; }
-    public float Mass { get; private set; } = Mass;
+    public float Mass { get; set; } = Mass;
     private Vector2 _force;
     
     public void AddForce(Vector2 force)

@@ -12,12 +12,15 @@ public class PhysicsWorld
     public static readonly List<RigidBody> RigidBodies = [];
 
     private Vector2 gravity = new Vector2(0, 500f);
-
+    
     public void Update(double deltaTime)
     {
+        CollisionChecker.CheckForCollisions(ActiveColliders);
+        
         foreach (RigidBody g in RigidBodies)
         {
             g.AddForce(gravity * g.Mass);
+            
             g.Integrate((float)deltaTime);
         }
     }

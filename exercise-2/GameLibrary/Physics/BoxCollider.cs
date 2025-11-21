@@ -22,12 +22,15 @@ public class BoxCollider : Collider
 
     public override AABB GetAABB()
     {
+        float halfWidth = (float)Width / 2f;
+        float halfHeight = (float)Height / 2f;
+        
         return new AABB
         {
-            MinX = GameObject.Position.X - (float)Width / 2,
-            MaxX = GameObject.Position.X + (float)Width / 2,
-            MinY = GameObject.Position.X - (float)Width / 2,
-            MaxY = GameObject.Position.X + (float)Width / 2
+            MinX = GameObject.Position.X - halfWidth,
+            MaxX = GameObject.Position.X + halfWidth,
+            MinY = GameObject.Position.Y - halfHeight,
+            MaxY = GameObject.Position.Y + halfHeight
         };
     }
 }

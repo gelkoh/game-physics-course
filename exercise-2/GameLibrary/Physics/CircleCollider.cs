@@ -24,8 +24,8 @@ public class CircleCollider : Collider
         {
             MinX = GameObject.Position.X - Radius,
             MaxX = GameObject.Position.X + Radius,
-            MinY = GameObject.Position.X - Radius,
-            MaxY = GameObject.Position.X + Radius
+            MinY = GameObject.Position.Y - Radius,
+            MaxY = GameObject.Position.Y + Radius
         };
     }
 }

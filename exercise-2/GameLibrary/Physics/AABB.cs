@@ -1,3 +1,5 @@
+using System;
+
 namespace GameLibrary.Physics;
 
 public struct AABB
@@ -13,5 +15,10 @@ public struct AABB
                a.MaxX > b.MinX &&
                a.MinY < b.MaxY &&
                a.MaxY > b.MinY;
+    }
+
+    public override string ToString()
+    {
+        return "(" + MinX + ", " + MaxX + ", " + MinY + ", " + MaxY + ")";
     }
 }
