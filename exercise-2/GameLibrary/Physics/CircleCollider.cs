@@ -5,7 +5,6 @@ namespace GameLibrary.Physics;
 public class CircleCollider : Collider
 {
     public float Radius { get; private set; }
-    public float Elasticity { get; private set; }
 
     public CircleCollider(float radius, float elasticity)
     {
@@ -27,5 +26,15 @@ public class CircleCollider : Collider
             MinY = GameObject.Position.Y - Radius,
             MaxY = GameObject.Position.Y + Radius
         };
+    }
+
+    public override Vector2[] GetNormals()
+    {
+        return [Vector2.Zero];
+    }
+    
+    public override Vector2[] GetCorners()
+    {
+        return [Vector2.Zero];
     }
 }

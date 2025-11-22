@@ -15,13 +15,14 @@ public class PhysicsWorld
     
     public void Update(double deltaTime)
     {
-        CollisionChecker.CheckForCollisions(ActiveColliders);
-        
         foreach (RigidBody g in RigidBodies)
         {
             g.AddForce(gravity * g.Mass);
-            
             g.Integrate((float)deltaTime);
         }
+
+        List<CollisionInfo> collisions = CollisionChecker.CheckForCollisions(ActiveColliders);
+
+        CollisionResolver.ResolveCollisions(collisions);
     }
 }

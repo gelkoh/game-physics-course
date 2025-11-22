@@ -91,7 +91,7 @@ public class LevelEnvironment
         
         // Todo: Add a BoxCollider to the components. The Size should be "TileSize" * width, "TileSize" * height
         // We recommend reducing the total size by one pixel on each axis to avoid issues with the outside blocks colliding with each other
-        components.Add(new BoxCollider(TileSize * width - 1, TileSize * height - 1, 0.2f));
+        components.Add(new BoxCollider(TileSize * width - 1, TileSize * height - 1, 1f));
         
         return new GameObject.Template(components);
     }
