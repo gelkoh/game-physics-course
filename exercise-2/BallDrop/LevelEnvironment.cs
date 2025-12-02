@@ -64,7 +64,7 @@ public class LevelEnvironment
             new BounceBallCollisionEffect(_content.Load<Texture2D>("Environment/yellow_circle")),
             // Todo: Add a Circle Collider => The size of the sprite in game is 40x40
             // Todo: The player ball should bounce off these objects... Maybe changing the elasticity on the collider could help?
-            new CircleCollider(20f, 0.2f)
+            new CircleCollider(20f, 3f)
         ]);
     }
 
@@ -91,7 +91,7 @@ public class LevelEnvironment
         
         // Todo: Add a BoxCollider to the components. The Size should be "TileSize" * width, "TileSize" * height
         // We recommend reducing the total size by one pixel on each axis to avoid issues with the outside blocks colliding with each other
-        components.Add(new BoxCollider(TileSize * width - 1, TileSize * height - 1, 1f));
+        components.Add(new BoxCollider(TileSize * width - 1, TileSize * height - 1, 1.5f));
         
         return new GameObject.Template(components);
     }

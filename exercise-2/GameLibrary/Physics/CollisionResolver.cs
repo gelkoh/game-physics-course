@@ -52,6 +52,9 @@ public class CollisionResolver
             {
                 bodyB.Velocity -= impulse * invMassB;
             }
+            
+            info.ColliderA?.TriggerCollision();
+            info.ColliderB?.TriggerCollision();
         }
     }
 }

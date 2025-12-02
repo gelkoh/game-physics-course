@@ -19,6 +19,7 @@ public static class CollisionChecker
     private static void BroadPhaseCheck(List<Collider> colliders, List<CollisionInfo> collisionList)
     {
         int n = colliders.Count;
+        
         for (int i = 0; i < n; i++)
         {
             Collider colA = colliders[i];
@@ -90,6 +91,7 @@ public static class CollisionChecker
         {
             axesToCheck[i] = boxNormals[i];
         }
+        
         axesToCheck[axesToCheck.Length - 1] = dynamicAxis;
 
         Vector2[] boxCorners = box.GetCorners();
@@ -172,6 +174,7 @@ public static class CollisionChecker
             float collisionDepth = combinedRadius - distance;
 
             Vector2 separationAxis;
+            
             if (distance < 1e-6f)
             {
                 separationAxis = Vector2.UnitY;

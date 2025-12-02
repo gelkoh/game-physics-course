@@ -19,6 +19,13 @@ public class RigidBody(float Mass) : Component
     {
         _force += force;
     }
+    
+    public void AddImpulse(Vector2 impulse)
+    {
+        if (Mass == 0) return;
+        
+        Velocity += impulse / Mass; 
+    }
 
     public void Integrate(float deltaTime)
     {
