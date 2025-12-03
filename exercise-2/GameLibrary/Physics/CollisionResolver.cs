@@ -34,11 +34,11 @@ public class CollisionResolver
             float elasticity = info.ColliderA.Elasticity * info.ColliderB.Elasticity;
 
             Vector2 relativeVelocity = (bodyA?.Velocity ?? Vector2.Zero) - (bodyB?.Velocity ?? Vector2.Zero);
-            float velocityAlongNormal = Vector2.Dot(relativeVelocity, n);
+            float separatingVelocity = Vector2.Dot(relativeVelocity, n);
 
-            if (velocityAlongNormal > 0f) continue;
+            if (separatingVelocity > 0f) continue;
 
-            float numerator = -(1f + elasticity) * velocityAlongNormal;
+            float numerator = -(1f + elasticity) * separatingVelocity;
             float denominator = totalInvMass;
             float j = numerator / denominator;
 

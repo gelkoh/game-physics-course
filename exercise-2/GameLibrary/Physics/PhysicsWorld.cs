@@ -22,7 +22,13 @@ public class PhysicsWorld
         }
 
         List<CollisionInfo> collisions = CollisionChecker.CheckForCollisions(ActiveColliders);
-
+        
+        foreach (CollisionInfo info in collisions)
+        {
+            info.ColliderA?.TriggerCollision();
+            info.ColliderB?.TriggerCollision();
+        }
+        
         CollisionResolver.ResolveCollisions(collisions);
     }
 }

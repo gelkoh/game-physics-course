@@ -62,101 +62,109 @@ public static class CollisionChecker
     {
         CircleCollider circle = (CircleCollider)colA;
         BoxCollider box = (BoxCollider)colB;
-        
-        float minOverlap = float.MaxValue;
-        Vector2 minOverlapAxis = Vector2.Zero;
 
-        Vector2 closestPoint = FindClosestPointOnBox(circle.Position, box); 
         Vector2 circleCenter = circle.Position;
-        Vector2 dynamicAxis = circleCenter - closestPoint; 
-
         float radius = circle.Radius;
+        
+        Vector2 closestPoint = FindClosestPointOnBox(circleCenter, box);
 
-        if (dynamicAxis == Vector2.Zero)
+        // Dynamic SAT axis
+        Vector2 dynamicAxis = circleCenter - closestPoint;
+
+        // Edge case => circle center is exactly on closest point
+        if (dynamicAxis.LengthSquared() < 1e-8f)
         {
+            Vector2 fallbackNormal = Vector2.UnitY;
+
             return new CollisionInfo
             {
-                IsColliding = true, 
-                MTV = Vector2.UnitY * radius,
-                Normal = Vector2.UnitY,
+                IsColliding = true,
+                Normal = fallbackNormal,
+                MTV = fallbackNormal * radius,
                 ColliderA = colA,
                 ColliderB = colB
             };
         }
 
+        // Find all SAT axes
         Vector2[] boxNormals = box.GetNormals();
-        Vector2[] axesToCheck = new Vector2[boxNormals.Length + 1];
+        Vector2[] axes = new Vector2[boxNormals.Length + 1];
 
         for (int i = 0; i < boxNormals.Length; i++)
         {
-            axesToCheck[i] = boxNormals[i];
+            axes[i] = boxNormals[i];
         }
-        
-        axesToCheck[axesToCheck.Length - 1] = dynamicAxis;
+
+        axes[axes.Length - 1] = dynamicAxis;
+
+        // SAT projections
+        float minOverlap = float.MaxValue;
+        Vector2 minAxis = Vector2.Zero;
 
         Vector2[] boxCorners = box.GetCorners();
-        
-        foreach (Vector2 axis in axesToCheck)
+
+        foreach (Vector2 axis in axes)
         {
-            float axisLen = axis.Length();
-            if (axisLen < 1e-6f) continue;
-            
-            Vector2 normal = axis / axisLen;
-            
-            float centerProj = Vector2.Dot(circleCenter, normal);
-            float colAMin = centerProj - radius;
-            float colAMax = centerProj + radius;
-            
-            float colBMin = float.MaxValue;
-            float colBMax = float.MinValue;
-            
+            if (axis.LengthSquared() < 1e-8f)
+            {
+                continue;
+            }
+
+            Vector2 n = Vector2.Normalize(axis);
+
+            // Circle projection
+            float centerProj = Vector2.Dot(circleCenter, n);
+            float circleMin = centerProj - radius;
+            float circleMax = centerProj + radius;
+
+            // Box projection
+            float boxMin = float.MaxValue;
+            float boxMax = float.MinValue;
+
             foreach (Vector2 corner in boxCorners)
             {
-                float proj = Vector2.Dot(corner, normal);
-                if (proj < colBMin) colBMin = proj;
-                if (proj > colBMax) colBMax = proj;
+                float proj = Vector2.Dot(corner, n);
+                boxMin = Math.Min(boxMin, proj);
+                boxMax = Math.Max(boxMax, proj);
             }
-            
-            if (colAMax < colBMin || colBMax < colAMin)
+
+            // Separation axis test
+            if (circleMax < boxMin || boxMax < circleMin)
             {
                 return new CollisionInfo { IsColliding = false };
             }
             
-            float lengthA = colAMax - colAMin;
-            float lengthB = colBMax - colBMin;
-            float combinedLength = lengthA + lengthB;
-            float totalLength = Math.Max(colAMax, colBMax) - Math.Min(colAMin, colBMin);
-            
-            float overlap = combinedLength - totalLength;
-            
+            // Calculate overlap
+            float overlap = Math.Min(circleMax, boxMax) - Math.Max(circleMin, boxMin);
+
             if (overlap < minOverlap)
             {
                 minOverlap = overlap;
-                minOverlapAxis = normal;
+                minAxis = n;
             }
         }
-        
-        Vector2 mtv = minOverlapAxis * minOverlap;
-        
-        Vector2 boxCenter = box.Position;
 
+        // Calculate mtv direction
+        Vector2 boxCenter = box.Position;
         Vector2 centerDiff = circleCenter - boxCenter;
 
-        if (Vector2.Dot(minOverlapAxis, centerDiff) < 0)
+        if (Vector2.Dot(minAxis, centerDiff) < 0)
         {
-            mtv = -mtv;
+            minAxis = -minAxis;
         }
-        
+
+        Vector2 mtv = minAxis * minOverlap;
+
         return new CollisionInfo
         {
-            IsColliding = true, 
+            IsColliding = true,
             MTV = mtv,
-            Normal = Vector2.Normalize(mtv),
+            Normal = minAxis,
             ColliderA = colA,
             ColliderB = colB
         };
     }
-    
+        
     private static CollisionInfo CheckCircleCircleCollision(Collider colA, Collider colB)
     {
         Vector2 vecToOtherCircle = colA.Position - colB.Position;

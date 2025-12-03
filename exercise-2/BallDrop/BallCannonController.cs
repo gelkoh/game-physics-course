@@ -64,13 +64,11 @@ public class BallCannonController(GameObject.Template ballTemplate) : Controller
         var shootDirection = new Vector2(0, 1);
         shootDirection.Rotate(GameObject.Rotation);
         
-        float maxShootForce = 800f;
+        float maxShootForce = 1500f;
 
         // Todo: Implement the actual shooting of "ball" using shootDirection and _inputStrength (value from 0 to 1)
         // hint: ball has a RigidBody component
         RigidBody ballRigidBody = ball.GetComponent<RigidBody>();
-        ballRigidBody.AddForce(shootDirection * _inputStrength * 100000f);
-        
         
         ballRigidBody.AddImpulse(shootDirection * _inputStrength * maxShootForce);
     }
