@@ -10,9 +10,15 @@ namespace GameLibrary.Physics;
 public abstract class Collider : Component
 {
     public RigidBody RigidBody { get; private set; }
+    public float Elasticity { get; set; }
+
+    public abstract Vector2 Position { get; }
     public Action Collided;
     
     public void TriggerCollision() => Collided?.Invoke();
+    public abstract AABB GetAABB();
+    public abstract Vector2[] GetNormals();
+    public abstract Vector2[] GetCorners();
 
     public override void Connect(GameObject gameObject)
     {

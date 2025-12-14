@@ -26,6 +26,7 @@ public class AngryMonkeysGame() : Core("AngryMonkeys", 1700, 950, false)
         var backgroundTemplate = new GameObject.Template([
             new SpriteRenderer.Builder(Content.Load<Texture2D>("background")).WithScale(1.7f).WithCenterOffset(new Vector2(0, -150)).Build(),
         ]);
+        
         backgroundTemplate.Instantiate(new Vector2(Graphics.GraphicsDevice.Viewport.Width / 2, Graphics.GraphicsDevice.Viewport.Height / 2));
     }
     
@@ -33,8 +34,9 @@ public class AngryMonkeysGame() : Core("AngryMonkeys", 1700, 950, false)
     {
         var groundTemplate = new GameObject.Template([
             new SpriteRenderer.Builder(Content.Load<Texture2D>("Environment/elementWood012")).WithScale(8.5f).Build(),
-            // Todo: Add a 2000x595 BoxCollider
+            new BoxCollider(2000, 595, 0f)
         ]);
+        
         groundTemplate.Instantiate(new Vector2(Graphics.GraphicsDevice.Viewport.Width / 2, Graphics.GraphicsDevice.Viewport.Height + 100));
     }
 
@@ -43,26 +45,31 @@ public class AngryMonkeysGame() : Core("AngryMonkeys", 1700, 950, false)
         var woodObstacleTemplate = new GameObject.Template([
             new SpriteRenderer.Builder(Content.Load<Texture2D>("Environment/elementWood016")).Build(),
             new RigidBody(20f),
-            // Todo: Add a 70x140 BoxCollider
+            new BoxCollider(70, 140, 0f)
         ]);
+        
         var stoneObstacleTemplate = new GameObject.Template([
             new SpriteRenderer.Builder(Content.Load<Texture2D>("Environment/elementStone017")).Build(),
             new RigidBody(40f),
-            // Todo: Add a 70x140 BoxCollider
+            new BoxCollider(70, 140, 0f)
         ]);
+        
         var alienGreenTemplate = new GameObject.Template([
             new SpriteRenderer.Builder(Content.Load<Texture2D>("Aliens/alienGreen_suit")).WithScale(0.8f).Build(),
             new RigidBody(8f),
-            // Todo: Add a 56x56 BoxCollider
+            new BoxCollider(56, 56, 0f)
         ]);
+        
         var alienPinkTemplate = new GameObject.Template([
             new SpriteRenderer.Builder(Content.Load<Texture2D>("Aliens/alienPink_round")).WithScale(0.8f).Build(),
             new RigidBody(6f),
-            // Todo: Add a CircleCollider with a 28 radius
+            new CircleCollider(28, 0f)
         ]);
+        
         var woodenTriangleTemplate = new GameObject.Template([
             new SpriteRenderer.Builder(Content.Load<Texture2D>("Environment/elementWood054")).Build(),
             new RigidBody(10f),
+            new TriangleCollider(new Vector2(-70f, 35f), new Vector2(0f, -35f), new Vector2(70f, 35f), 0f)
             // Todo: Add a Triangle collider with following corners: (-70, 35), (0, -35), (70, 35) these are relative positions to the center
         ]);
 
@@ -99,12 +106,14 @@ public class AngryMonkeysGame() : Core("AngryMonkeys", 1700, 950, false)
         var flyingMonkeyTemplate = new GameObject.Template([
             new SpriteRenderer.Builder(Content.Load<Texture2D>("Monkey")).WithScale(0.2f).Build(),
             new RigidBody(50f),
-            // Todo: Add a CircleCollider with the radius 26
+            new CircleCollider(26, 1f)
         ]); 
+        
         var monkeyTemplate = new GameObject.Template([
             new SpriteRenderer.Builder(Content.Load<Texture2D>("Monkey")).WithScale(0.2f).Build(),
             new MonkeyController(Content, flyingMonkeyTemplate)
         ]);
+        
         monkeyTemplate.Instantiate(new Vector2(200, Graphics.GraphicsDevice.Viewport.Height - 500));
     }
 }

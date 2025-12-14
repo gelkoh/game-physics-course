@@ -11,13 +11,33 @@ namespace GameLibrary.Physics;
 /// <param name="Mass"></param>
 public class RigidBody(float Mass) : Component
 {
-    public float Mass { get; private set; } = Mass;
-
-    public void Update(double deltaTime)
+    public Vector2 Velocity { get; set; }
+    public float Mass { get; set; } = Mass;
+    private Vector2 _force;
+    
+    public void AddForce(Vector2 force)
     {
-        // Todo: Move, Accelerate...
+        _force += force;
+    }
+    
+    public void AddImpulse(Vector2 impulse)
+    {
+        if (Mass == 0) return;
+        
+        Velocity += impulse / Mass; 
     }
 
+    public void Integrate(float deltaTime)
+    {
+        Vector2 acceleration = _force / Mass;
+
+        Velocity += deltaTime * acceleration;
+
+        GameObject.Position += deltaTime * Velocity;
+
+        _force = Vector2.Zero;
+    }
+    
     public override void Connect(GameObject gameObject)
     {
         PhysicsWorld.RigidBodies.Add(this);
