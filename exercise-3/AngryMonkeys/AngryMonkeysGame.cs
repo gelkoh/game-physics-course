@@ -70,7 +70,6 @@ public class AngryMonkeysGame() : Core("AngryMonkeys", 1700, 950, false)
             new SpriteRenderer.Builder(Content.Load<Texture2D>("Environment/elementWood054")).Build(),
             new RigidBody(10f),
             new TriangleCollider(new Vector2(-70f, 35f), new Vector2(0f, -35f), new Vector2(70f, 35f), 0f)
-            // Todo: Add a Triangle collider with following corners: (-70, 35), (0, -35), (70, 35) these are relative positions to the center
         ]);
 
         var baseY = Graphics.GraphicsDevice.Viewport.Height - 260;

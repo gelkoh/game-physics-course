@@ -85,11 +85,15 @@ public class MonkeyController(ContentManager content, GameObject.Template flying
             var flyingMonkeyPosition = GameObject.Position + dragVector * 100f;
             var flyingMonkey = flyingMonkeyTemplate.Instantiate(flyingMonkeyPosition);
             
-            // Todo: make the monkey fly depending on the dragVector and dragDistance
+            RigidBody flyingMonkeyRigidBody = flyingMonkey.GetComponent<RigidBody>();
+
+            float maxShootForce = 500f;
+            
+            flyingMonkeyRigidBody.AddImpulse(dragVector * dragDistance * maxShootForce);
         }
         _isDraggingMonkey = false;
     }
-
+    
     private float InverseLerp(float min, float max, float value)
     {
         return MathHelper.Clamp((value - min) / (max - min), 0, 1);

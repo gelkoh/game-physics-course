@@ -32,9 +32,4 @@ public class CircleCollider : Collider
     {
         return [Vector2.Zero];
     }
-    
-    public override Vector2[] GetCorners()
-    {
-        return [Vector2.Zero];
-    }
 }

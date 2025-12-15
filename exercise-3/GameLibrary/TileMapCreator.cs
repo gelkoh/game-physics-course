@@ -75,7 +75,7 @@ namespace GameLibrary
             //TODO Add Collider
             return new GameObject.Template([
                 new SpriteRenderer.Builder(texture).Build()
-                ]);
+            ]);
         }
     }
 }

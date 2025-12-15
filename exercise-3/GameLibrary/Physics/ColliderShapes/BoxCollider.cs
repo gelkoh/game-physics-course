@@ -2,24 +2,18 @@ using Microsoft.Xna.Framework;
 
 namespace GameLibrary.Physics;
 
-public class TriangleCollider : Collider
+public class BoxCollider : Collider, IConvexPolygonCollider
 {
     public int Width { get; private set; }
     public int Height { get; private set; }
+    private float HalfWidth => Width / 2.0f;
+    private float HalfHeight => Height / 2.0f;
 
-    private Vector2 a;
-    private Vector2 b;
-    private Vector2 c;
-
-    public TriangleCollider(Vector2 a, Vector2 b, Vector2 c, float elasticity)
+    public BoxCollider(int width, int height, float elasticity)
     {
-        this.a = a;
-        this.b = b;
-        this.c = c;
+        Width = width;
+        Height = height;
         Elasticity = elasticity;
-
-        Width = 10;
-        Height = 10;
     }
 
     public override Vector2 Position
@@ -29,7 +23,7 @@ public class TriangleCollider : Collider
 
     public override AABB GetAABB()
     {
-        Vector2[] corners = GetCorners(); 
+        Vector2[] corners = GetWorldVertices(); 
 
         float minX = float.MaxValue;
         float maxX = float.MinValue;
@@ -66,19 +60,17 @@ public class TriangleCollider : Collider
         return new Vector2[] { rotatedUp, rotatedRight };
     }
 
-    public override Vector2[] GetCorners()
+    public Vector2[] GetWorldVertices()
     {
-        float halfWidth = (float)Width / 2f;
-        float halfHeight = (float)Height / 2f;
         float rotation = GameObject.Rotation;
         Vector2 center = GameObject.Position;
     
         Vector2[] localCorners = new Vector2[]
         {
-            new(-halfWidth, -halfHeight),
-            new( halfWidth, -halfHeight),
-            new( halfWidth,  halfHeight),
-            new(-halfWidth,  halfHeight)
+            new(-HalfWidth, -HalfHeight),
+            new( HalfWidth, -HalfHeight),
+            new( HalfWidth,  HalfHeight),
+            new(-HalfWidth,  HalfHeight)
         };
 
         Vector2[] worldCorners = new Vector2[4];

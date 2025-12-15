@@ -144,6 +144,8 @@ public class Core : Game
         {
             SpriteBatch.Draw(s.Texture, s.Position, null, s.Color, s.GameObject.Rotation, Vector2.Zero, s.Scale, SpriteEffects.None, 0.0f);
         }
+        
+        DebugPhysicsRenderer.DrawColliders(SpriteBatch, GraphicsDevice);
 
         SpriteBatch.End();
         base.Draw(gameTime);

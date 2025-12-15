@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 
 namespace GameLibrary.Physics;
@@ -47,15 +48,21 @@ public static class CollisionChecker
     }
     
     // Check for SAT collisions
-    private static CollisionInfo NarrowPhaseCheck(Collider a, Collider b)
+    private static CollisionInfo NarrowPhaseCheck(Collider colA, Collider colB)
     {
-        return (a, b) switch
-        {
-            (CircleCollider colA, BoxCollider colB) => CheckCircleBoxCollision(colA, colB),
-            (BoxCollider colA, CircleCollider colB) => CheckCircleBoxCollision(colB, colA),
-            (CircleCollider colA, CircleCollider colB) => CheckCircleCircleCollision(colA, colB),
-            _ => new CollisionInfo { IsColliding = false }
-        };
+        if (colA is CircleCollider circleColACC && colB is CircleCollider circleColBCC)
+            return CheckCircleCircleCollision(circleColACC, circleColBCC);
+        
+        if (colA is CircleCollider circleColACP && colB is IConvexPolygonCollider polygonColBCP)
+            return CheckCirclePolygonCollision(circleColACP, polygonColBCP);
+        
+        if (colA is IConvexPolygonCollider circleColACP2 && colB is CircleCollider circleColBCP2)
+            return CheckCirclePolygonCollision(circleColBCP2, circleColACP2);
+        
+        if (colA is IConvexPolygonCollider colAPP && colB is IConvexPolygonCollider colBPP)
+            return CheckPolygonPolygonCollision(colAPP, colBPP);
+        
+        return new CollisionInfo { IsColliding = false };
     }
 
     private static CollisionInfo CheckCircleBoxCollision(Collider colA, Collider colB)
@@ -101,7 +108,7 @@ public static class CollisionChecker
         float minOverlap = float.MaxValue;
         Vector2 minAxis = Vector2.Zero;
 
-        Vector2[] boxCorners = box.GetCorners();
+        Vector2[] boxCorners = box.GetWorldVertices();
 
         foreach (Vector2 axis in axes)
         {
@@ -207,6 +214,134 @@ public static class CollisionChecker
         return new CollisionInfo { IsColliding = false };
     }
 
+    private static CollisionInfo CheckCirclePolygonCollision(
+        CircleCollider circle,
+        IConvexPolygonCollider polygon)
+    {
+        Vector2[] verts = polygon.GetWorldVertices();
+
+        float minOverlap = float.MaxValue;
+        Vector2 smallestAxis = Vector2.Zero;
+
+        foreach (Vector2 axis in GetPolygonAxes(verts))
+        {
+            Project(verts, axis, out float polyMin, out float polyMax);
+
+            float centerProj = Vector2.Dot(circle.Position, axis);
+            float circleMin = centerProj - circle.Radius;
+            float circleMax = centerProj + circle.Radius;
+
+            if (circleMax < polyMin || polyMax < circleMin)
+                return new CollisionInfo { IsColliding = false };
+
+            float overlap = Math.Min(circleMax, polyMax) - Math.Max(circleMin, polyMin);
+
+            if (overlap < minOverlap)
+            {
+                minOverlap = overlap;
+                smallestAxis = axis;
+            }
+        }
+
+        Vector2 closest = FindClosestVertex(circle.Position, verts);
+        Vector2 axisToVertex = circle.Position - closest;
+        
+        if (axisToVertex.LengthSquared() > 1e-8f)
+        {
+            Vector2 dynamicAxis = Vector2.Normalize(axisToVertex);
+
+            Project(verts, dynamicAxis, out float polyMin, out float polyMax);
+
+            float centerProj = Vector2.Dot(circle.Position, dynamicAxis);
+            float circleMin = centerProj - circle.Radius;
+            float circleMax = centerProj + circle.Radius;
+
+            if (circleMax < polyMin || polyMax < circleMin)
+                return new CollisionInfo { IsColliding = false };
+
+            float overlap = Math.Min(circleMax, polyMax) - Math.Max(circleMin, polyMin);
+
+            if (overlap < minOverlap)
+            {
+                minOverlap = overlap;
+                smallestAxis = dynamicAxis;
+            }
+        }
+        
+        Vector2 polyCenter = ComputeCentroid(verts);
+        Vector2 centerDiff = circle.Position - polyCenter;
+
+        if (Vector2.Dot(smallestAxis, centerDiff) < 0)
+        {
+            smallestAxis = -smallestAxis;
+        }
+        
+        return new CollisionInfo
+        {
+            IsColliding = true,
+            Normal = smallestAxis,
+            MTV = smallestAxis * minOverlap,
+            ColliderA = circle,
+            ColliderB = (Collider)polygon
+        };
+    }
+    
+    private static CollisionInfo CheckPolygonPolygonCollision(
+        IConvexPolygonCollider a,
+        IConvexPolygonCollider b)
+    {
+        Vector2[] vertsA = a.GetWorldVertices();
+        Vector2[] vertsB = b.GetWorldVertices();
+
+        float minOverlap = float.MaxValue;
+        Vector2 smallestAxis = Vector2.Zero;
+        
+        string nameA = (a is BoxCollider) ? "Box" : "Poly";
+        string nameB = (b is BoxCollider) ? "Boden" : "Poly";
+
+        int axisIndex = 0;
+        foreach (Vector2 axis in GetPolygonAxes(vertsA, vertsB))
+        {
+            axisIndex++;
+            Project(vertsA, axis, out float minA, out float maxA);
+            Project(vertsB, axis, out float minB, out float maxB);
+
+            if (maxA < minB || maxB < minA)
+            {
+                return new CollisionInfo { IsColliding = false };
+            }
+
+            float overlap = Math.Min(maxA, maxB) - Math.Max(minA, minB);
+
+            if (overlap < minOverlap)
+            {
+                minOverlap = overlap;
+                smallestAxis = axis;
+            }
+        }
+
+        Vector2 centerA = ComputeCentroid(vertsA);
+        Vector2 centerB = ComputeCentroid(vertsB);
+        Vector2 centerDiff = centerA - centerB;
+        
+        bool flipped = false;
+        
+        if (Vector2.Dot(smallestAxis, centerDiff) < 0)
+        {
+            smallestAxis = -smallestAxis;
+            flipped = true;
+        }
+        
+        return new CollisionInfo
+        {
+            IsColliding = true,
+            Normal = smallestAxis,
+            MTV = smallestAxis * minOverlap,
+            ColliderA = (Collider)a,
+            ColliderB = (Collider)b
+        };
+    }
+
     private static Vector2 FindClosestPointOnBox(Vector2 point, BoxCollider box)
     {
         Vector2 boxPos = box.Position;
@@ -224,5 +359,76 @@ public static class CollisionChecker
         Vector2 worldPoint = boxPos + Vector2.Rotate(clampedLocal, rotation);
 
         return worldPoint;
+    }
+    
+    private static IEnumerable<Vector2> GetPolygonAxes(Vector2[] verts)
+    {
+        int count = verts.Length;
+
+        for (int i = 0; i < count; i++)
+        {
+            Vector2 p1 = verts[i];
+            Vector2 p2 = verts[(i + 1) % count];
+
+            Vector2 edge = p2 - p1;
+
+            if (edge.LengthSquared() < 1e-8f)
+                continue;
+
+            Vector2 normal = new Vector2(-edge.Y, edge.X);
+            normal.Normalize();
+
+            yield return normal;
+        }
+    }
+
+    private static IEnumerable<Vector2> GetPolygonAxes(Vector2[] a, Vector2[] b)
+    {
+        foreach (var axis in GetPolygonAxes(a))
+            yield return axis;
+
+        foreach (var axis in GetPolygonAxes(b))
+            yield return axis;
+    }
+
+    private static void Project(Vector2[] verts, Vector2 axis, out float min, out float max)
+    {
+        float projection = Vector2.Dot(verts[0], axis);
+        min = projection;
+        max = projection;
+
+        for (int i = 1; i < verts.Length; i++)
+        {
+            projection = Vector2.Dot(verts[i], axis);
+            if (projection < min) min = projection;
+            if (projection > max) max = projection;
+        }
+    }
+    
+    private static Vector2 ComputeCentroid(Vector2[] verts)
+    {
+        Vector2 sum = Vector2.Zero;
+        foreach (var v in verts)
+            sum += v;
+
+        return sum / verts.Length;
+    }
+
+    private static Vector2 FindClosestVertex(Vector2 point, Vector2[] verts)
+    {
+        float minDistSq = float.MaxValue;
+        Vector2 closest = verts[0];
+
+        foreach (var v in verts)
+        {
+            float distSq = Vector2.DistanceSquared(point, v);
+            if (distSq < minDistSq)
+            {
+                minDistSq = distSq;
+                closest = v;
+            }
+        }
+
+        return closest;
     }
 }

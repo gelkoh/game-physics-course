@@ -9,11 +9,23 @@ namespace GameLibrary.Physics;
 /// Handles Mass and Force Application.
 /// </summary>
 /// <param name="Mass"></param>
-public class RigidBody(float Mass) : Component
+public class RigidBody : Component
 {
     public Vector2 Velocity { get; set; }
-    public float Mass { get; set; } = Mass;
     private Vector2 _force;
+
+    public float Mass { get; set; }
+    public float InverseMass => Mass > 0f ? 1f / Mass : 0f;
+    
+    public float AngularVelocity; // Omega
+    public float MomentOfInertia; // I
+    public float InverseInertia => MomentOfInertia > 0f ? 1f / MomentOfInertia : 0f;
+
+    public RigidBody(float mass)
+    {
+        this.Mass = mass;
+        MomentOfInertia = mass * 500f;
+    }
     
     public void AddForce(Vector2 force)
     {
@@ -34,6 +46,11 @@ public class RigidBody(float Mass) : Component
         Velocity += deltaTime * acceleration;
 
         GameObject.Position += deltaTime * Velocity;
+        
+        GameObject.Rotation += AngularVelocity * deltaTime;
+        
+        // Dämpfung (Luftwiderstand für Drehung), damit sie nicht ewig drehen
+        AngularVelocity *= 0.98f;
 
         _force = Vector2.Zero;
     }

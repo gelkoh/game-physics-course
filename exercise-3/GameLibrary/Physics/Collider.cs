@@ -18,7 +18,6 @@ public abstract class Collider : Component
     public void TriggerCollision() => Collided?.Invoke();
     public abstract AABB GetAABB();
     public abstract Vector2[] GetNormals();
-    public abstract Vector2[] GetCorners();
 
     public override void Connect(GameObject gameObject)
     {

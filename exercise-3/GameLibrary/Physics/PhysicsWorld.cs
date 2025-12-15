@@ -1,4 +1,6 @@
+using System;
 using System.Collections.Generic;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 
 namespace GameLibrary.Physics;
@@ -11,7 +13,7 @@ public class PhysicsWorld
     public static readonly List<Collider> ActiveColliders = [];
     public static readonly List<RigidBody> RigidBodies = [];
 
-    private Vector2 gravity = new Vector2(0, 500f);
+    private Vector2 gravity = new Vector2(0f, 500f);
     
     public void Update(double deltaTime)
     {
