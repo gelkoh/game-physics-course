@@ -1,6 +1,4 @@
-using System;
 using System.Collections.Generic;
-using System.Diagnostics;
 using Microsoft.Xna.Framework;
 
 namespace GameLibrary.Physics;
@@ -13,16 +11,22 @@ public class PhysicsWorld
     public static readonly List<Collider> ActiveColliders = [];
     public static readonly List<RigidBody> RigidBodies = [];
 
-    private Vector2 gravity = new Vector2(0f, 500f);
+    private readonly Vector2 gravity = new Vector2(0f, 500f);
     
     public void Update(double deltaTime)
     {
+        // This method follows principle from lecture 1 slide 13: Simulate forces => check collisions => update positions
+        
+        float dt = (float)deltaTime;
+        
+        // Simulate forces
         foreach (RigidBody g in RigidBodies)
         {
             g.AddForce(gravity * g.Mass);
-            g.Integrate((float)deltaTime);
+            g.Integrate(dt);
         }
 
+        // Check collisions
         List<CollisionInfo> collisions = CollisionChecker.CheckForCollisions(ActiveColliders);
         
         foreach (CollisionInfo info in collisions)
@@ -31,6 +35,7 @@ public class PhysicsWorld
             info.ColliderB?.TriggerCollision();
         }
         
-        CollisionResolver.ResolveCollisions(collisions);
+        // Update positions (by resolving collisions)
+        CollisionResolver.ResolveCollisions(collisions, dt, gravity);
     }
 }

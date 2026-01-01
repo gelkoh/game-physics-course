@@ -1,6 +1,4 @@
-﻿using System.Diagnostics;
-using System.Net.Mime;
-using GameLibrary;
+﻿using GameLibrary;
 using GameLibrary.Physics;
 using Microsoft.Xna.Framework;
 using Microsoft.Xna.Framework.Graphics;
@@ -78,18 +76,18 @@ public class AngryMonkeysGame() : Core("AngryMonkeys", 1700, 950, false)
         stoneObstacleTemplate.Instantiate(new Vector2(1140, baseY));
         stoneObstacleTemplate.Instantiate(new Vector2(1280, baseY));
         stoneObstacleTemplate.Instantiate(new Vector2(1420, baseY));
-        
+
         woodObstacleTemplate.Instantiate(new Vector2(1070, baseY - 105), MathHelper.ToRadians(90));
         stoneObstacleTemplate.Instantiate(new Vector2(1210, baseY - 105), MathHelper.ToRadians(90));
         woodObstacleTemplate.Instantiate(new Vector2(1350, baseY - 105), MathHelper.ToRadians(90));
-        
+
         woodObstacleTemplate.Instantiate(new Vector2(1070, baseY - 210));
         woodObstacleTemplate.Instantiate(new Vector2(1210, baseY - 210));
         woodObstacleTemplate.Instantiate(new Vector2(1350, baseY - 210));
-        
+
         woodObstacleTemplate.Instantiate(new Vector2(1140, baseY - 315), MathHelper.ToRadians(90));
         woodObstacleTemplate.Instantiate(new Vector2(1280, baseY - 315), MathHelper.ToRadians(90));
-        
+
         woodObstacleTemplate.Instantiate(new Vector2(1140, baseY - 420));
         woodObstacleTemplate.Instantiate(new Vector2(1280, baseY - 420));
 

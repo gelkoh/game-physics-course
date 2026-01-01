@@ -1,4 +1,5 @@
 using System;
+using System.Diagnostics;
 using Microsoft.Xna.Framework;
 
 namespace GameLibrary.Physics;
@@ -15,16 +16,16 @@ public class RigidBody : Component
     private Vector2 _force;
 
     public float Mass { get; set; }
-    public float InverseMass => Mass > 0f ? 1f / Mass : 0f;
-    
-    public float AngularVelocity; // Omega
-    public float MomentOfInertia; // I
-    public float InverseInertia => MomentOfInertia > 0f ? 1f / MomentOfInertia : 0f;
 
+    public float AngularVelocity;
+    public float MomentOfInertia;
+    
+    public float InverseMass => (Mass > 0f) ? 1f / Mass : 0f;    
+    public float InverseInertia => (MomentOfInertia > 0f) ? 1f / MomentOfInertia : 0f;
+    
     public RigidBody(float mass)
     {
         this.Mass = mass;
-        MomentOfInertia = mass * 500f;
     }
     
     public void AddForce(Vector2 force)
@@ -49,7 +50,6 @@ public class RigidBody : Component
         
         GameObject.Rotation += AngularVelocity * deltaTime;
         
-        // Dämpfung (Luftwiderstand für Drehung), damit sie nicht ewig drehen
         AngularVelocity *= 0.98f;
 
         _force = Vector2.Zero;

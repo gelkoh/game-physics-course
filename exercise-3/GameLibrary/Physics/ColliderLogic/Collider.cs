@@ -13,11 +13,15 @@ public abstract class Collider : Component
     public float Elasticity { get; set; }
 
     public abstract Vector2 Position { get; }
-    public Action Collided;
-    
-    public void TriggerCollision() => Collided?.Invoke();
     public abstract AABB GetAABB();
-    public abstract Vector2[] GetNormals();
+    
+    
+    public Action Collided;
+    public void TriggerCollision() => Collided?.Invoke();
+    
+    // For collision friction
+    public float StaticFriction { get; } = 2f;
+    public float DynamicFriction { get; } = 1f;
 
     public override void Connect(GameObject gameObject)
     {
@@ -30,4 +34,6 @@ public abstract class Collider : Component
     {
         PhysicsWorld.ActiveColliders.Remove(this);
     }
+    
+    public virtual void Initialize() {}
 }

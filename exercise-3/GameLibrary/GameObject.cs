@@ -2,6 +2,7 @@ using Microsoft.Xna.Framework;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using GameLibrary.Physics;
 
 namespace GameLibrary
 {
@@ -39,6 +40,10 @@ namespace GameLibrary
                 var gameObject = new GameObject(position, rotation, scale);
                 components.ForEach(comp => gameObject._components.Add(comp.CloneComponent()));
                 gameObject._components.ForEach(comp => comp.Connect(gameObject));
+                gameObject._components.ForEach(comp =>
+                {
+                    if (comp is Collider col) col.Initialize();
+                });
                 return gameObject;
             }
         }

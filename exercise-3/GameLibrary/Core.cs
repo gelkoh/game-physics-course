@@ -139,15 +139,14 @@ public class Core : Game
         GraphicsDevice.Clear(ClearColor);
 
         SpriteBatch.Begin();
-
+        
         foreach (SpriteRenderer s in ActiveRenderers)
         {
             SpriteBatch.Draw(s.Texture, s.Position, null, s.Color, s.GameObject.Rotation, Vector2.Zero, s.Scale, SpriteEffects.None, 0.0f);
         }
         
-        DebugPhysicsRenderer.DrawColliders(SpriteBatch, GraphicsDevice);
-
         SpriteBatch.End();
+
         base.Draw(gameTime);
     }
 }
