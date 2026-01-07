@@ -6,12 +6,11 @@ namespace GameLibrary.Physics;
 
 public static class CollisionResolver
 {
+    // TODO: Update collision depth
     public static void ResolveCollisions(List<CollisionInfo> collisions, float deltaTime, Vector2 gravity)
     {
-        // Iterative solver iterations >= number of contacts (lecture 7 slide 16)
         // We resolve the conflicts multiple times because resolving one contact can shift another
         int iterations = 4;
-        Console.WriteLine(iterations);
 
         for (int i = 0; i < iterations; i++)
         {
@@ -32,7 +31,7 @@ public static class CollisionResolver
                 ApplyLinearProjection(info, bodyA, bodyB, invMassA, invMassB);
 
                 // Impulse calculation, calculate physical impacts and friction
-                ResolveContactConstraints(info, bodyA, bodyB, invMassA, invMassB, invInertiaA, invInertiaB, deltaTime, gravity);
+                ResolveCollisions(info, bodyA, bodyB, invMassA, invMassB, invInertiaA, invInertiaB, deltaTime, gravity);
             }
         }
     }
@@ -61,7 +60,7 @@ public static class CollisionResolver
         if (bodyB != null) bodyB.GameObject.Position += correction * (invMassB / totalInvMass);
     }
     
-    private static void ResolveContactConstraints(
+    private static void ResolveCollisions(
         CollisionInfo info, 
         RigidBody bodyA, RigidBody bodyB,
         float invMassA, float invMassB,
@@ -133,12 +132,7 @@ public static class CollisionResolver
         // Impulse calculation math (with rotation)
         float numerator = -(1 + e) * realVelocityAlongNormal;
         
-        float rA_cross_n = rA.X * n.Y - rA.Y * n.X;
-        float rB_cross_n = rB.X * n.Y - rB.Y * n.X;
-
-        float termA = (bodyA != null) ? (rA_cross_n * rA_cross_n) * invInertiaA : 0f;
-        float termB = (bodyB != null) ? (rB_cross_n * rB_cross_n) * invInertiaB : 0f;
-        float denominator = invMassA + invMassB + termA + termB;
+        float denominator = ComputeImpulseDenominator(n, rA, rB, invMassA, invMassB, invInertiaA, invInertiaB);
 
         if (denominator == 0f) return 0f;
 
@@ -184,21 +178,13 @@ public static class CollisionResolver
 
         tangent.Normalize();
 
-        // Calculate friction impulse Jt
-        // Identical formula as for normal momentum, but with tangent instead of normal
-        float numeratorT = -Vector2.Dot(relativeVelocity, tangent);
-
-        float rA_cross_t = rA.X * tangent.Y - rA.Y * tangent.X;
-        float rB_cross_t = rB.X * tangent.Y - rB.Y * tangent.X;
-
-        float termAT = (bodyA != null) ? (rA_cross_t * rA_cross_t) * invInertiaA : 0f;
-        float termBT = (bodyB != null) ? (rB_cross_t * rB_cross_t) * invInertiaB : 0f;
-        float denominatorT = invMassA + invMassB + termAT + termBT;
+        float denominatorT = ComputeImpulseDenominator(tangent, rA, rB, invMassA, invMassB, invInertiaA, invInertiaB);
 
         if (denominatorT == 0f) return;
 
+        float numeratorT = -Vector2.Dot(relativeVelocity, tangent);
         float jt = numeratorT / denominatorT;
-
+        
         // Apply coulomb's law
         float muStatic = (info.ColliderA.StaticFriction + info.ColliderB.StaticFriction) * 0.5f;
         float muDynamic = (info.ColliderA.DynamicFriction + info.ColliderB.DynamicFriction) * 0.5f;
@@ -227,5 +213,20 @@ public static class CollisionResolver
             bodyB.Velocity -= frictionImpulse * invMassB;
             bodyB.AngularVelocity -= (rB.X * frictionImpulse.Y - rB.Y * frictionImpulse.X) * invInertiaB;
         }
+    }
+    
+    private static float ComputeImpulseDenominator(
+        Vector2 direction, 
+        Vector2 rA, Vector2 rB, 
+        float invMassA, float invMassB, 
+        float invInertiaA, float invInertiaB)
+    {
+        float rA_cross_dir = rA.X * direction.Y - rA.Y * direction.X;
+        float rB_cross_dir = rB.X * direction.Y - rB.Y * direction.X;
+        
+        float termA = (invInertiaA > 0f) ? (rA_cross_dir * rA_cross_dir) * invInertiaA : 0f;
+        float termB = (invInertiaB > 0f) ? (rB_cross_dir * rB_cross_dir) * invInertiaB : 0f;
+
+        return invMassA + invMassB + termA + termB;
     }
 }

@@ -76,16 +76,15 @@ public static class PhysicsMath
         }
 
         // Polygon-polygon collision
-        IConvexPolygonCollider polyA = (IConvexPolygonCollider)info.ColliderA;
         IConvexPolygonCollider polyB = (IConvexPolygonCollider)info.ColliderB;
         Vector2 n = info.Normal;
 
         // Get incident edge
         Edge incidentEdge = FindBestEdge(polyB.GetWorldVertices(), -n);
         List<Vector2> clipPoints = new List<Vector2> { incidentEdge.V1, incidentEdge.V2 };
-
+        
         // Get reference edge
-        Edge referenceEdge = FindBestEdge(polyA.GetWorldVertices(), n);
+        Edge referenceEdge = info.ReferenceEdge;
         
         // Get reference edge tangent
         Vector2 refTan = Vector2.Normalize(referenceEdge.V2 - referenceEdge.V1);

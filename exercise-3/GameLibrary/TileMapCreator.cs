@@ -72,7 +72,6 @@ namespace GameLibrary
         /// <returns></returns>
         private static GameObject.Template CreateTileTemplate(Texture2D texture)
         {
-            //TODO Add Collider
             return new GameObject.Template([
                 new SpriteRenderer.Builder(texture).Build()
             ]);

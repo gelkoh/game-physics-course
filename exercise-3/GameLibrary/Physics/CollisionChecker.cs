@@ -156,6 +156,7 @@ public static class CollisionChecker
             }
         }
     
+        // Make sure that collision normal points into correct direction (from ref to inc polygon)
         Vector2 polyCenter = ((Collider)polygon).Position;
         Vector2 directionPolyToCircle = circle.Position - polyCenter;
 
@@ -180,6 +181,8 @@ public static class CollisionChecker
     {
         Vector2[] vertsA = a.GetWorldVertices();
         Vector2[] vertsB = b.GetWorldVertices();
+        Vector2[] normalsA = a.GetNormals();
+        Vector2[] normalsB = b.GetNormals();
 
         float minOverlap = float.MaxValue;
         Vector2 smallestAxis = Vector2.Zero;
@@ -187,42 +190,65 @@ public static class CollisionChecker
         // We remember who provided us with the normal
         IConvexPolygonCollider refPoly = a;
         IConvexPolygonCollider incPoly = b;
+        
+        Edge bestRefEdge = new Edge(); 
+        
+        int countA = normalsA.Length;
+        int countB = normalsB.Length;
+        int totalCount = countA + countB;
 
-        // Check normals of A
-        foreach (Vector2 axis in a.GetNormals())
+        for (int i = 0; i < totalCount; i++)
         {
-            PhysicsMath.ProjectVertices(vertsA, axis, out float minA, out float maxA);
-            PhysicsMath.ProjectVertices(vertsB, axis, out float minB, out float maxB);
-
-            if (maxA < minB || maxB < minA) return new CollisionInfo { IsColliding = false };
-
-            float overlap = Math.Min(maxA, maxB) - Math.Max(minA, minB);
+            Vector2 axis;
             
-            if (overlap < minOverlap)
+            // Check if we are currently checking normals of A or B
+            if (i < countA)
             {
-                minOverlap = overlap;
-                smallestAxis = axis;
-                refPoly = a;
-                incPoly = b;
+                axis = normalsA[i];
             }
-        }
+            else
+            {
+                axis = normalsB[i - countA];
+            }
 
-        // Check normals of B
-        foreach (Vector2 axis in b.GetNormals())
-        {
+            // Projection of all vertices
             PhysicsMath.ProjectVertices(vertsA, axis, out float minA, out float maxA);
             PhysicsMath.ProjectVertices(vertsB, axis, out float minB, out float maxB);
 
+            // Separation axis check
             if (maxA < minB || maxB < minA) return new CollisionInfo { IsColliding = false };
 
             float overlap = Math.Min(maxA, maxB) - Math.Max(minA, minB);
-            
+
             if (overlap < minOverlap)
             {
                 minOverlap = overlap;
                 smallestAxis = axis;
-                refPoly = b;
-                incPoly = a;
+
+                // Decide based on the index who is ref- and who is inc-collider
+                if (i < countA)
+                {
+                    // Axis belongs to A => A is reference
+                    refPoly = a;
+                    incPoly = b;
+                    
+                    // Save edge of A
+                    Vector2 v1 = vertsA[i];
+                    Vector2 v2 = vertsA[(i + 1) % countA];
+                    bestRefEdge = new Edge { V1 = v1, V2 = v2, MaxVertex = v1 };
+                }
+                else
+                {
+                    // Axis belongs to B => B is reference
+                    refPoly = b;
+                    incPoly = a;
+                    
+                    // Save edge of B
+                    int idxB = i - countA;
+                    Vector2 v1 = vertsB[idxB];
+                    Vector2 v2 = vertsB[(idxB + 1) % countB];
+                    bestRefEdge = new Edge { V1 = v1, V2 = v2, MaxVertex = v1 };
+                }
             }
         }
         
@@ -242,7 +268,8 @@ public static class CollisionChecker
             Normal = smallestAxis,
             MTV = smallestAxis * minOverlap,
             ColliderA = (Collider)refPoly,
-            ColliderB = (Collider)incPoly
+            ColliderB = (Collider)incPoly,
+            ReferenceEdge = bestRefEdge
         };
     }
 }
