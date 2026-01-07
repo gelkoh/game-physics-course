@@ -20,7 +20,7 @@ public abstract class Collider : Component
     public void TriggerCollision() => Collided?.Invoke();
     
     // For collision friction
-    public float StaticFriction { get; } = 2f;
+    public float StaticFriction { get; } = 3f;
     public float DynamicFriction { get; } = 1f;
 
     public override void Connect(GameObject gameObject)

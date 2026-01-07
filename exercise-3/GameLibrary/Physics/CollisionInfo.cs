@@ -9,4 +9,5 @@ public struct CollisionInfo
     public Vector2[] ContactPoints { get; set; }
     public Vector2 MTV { get; set; }
     public Vector2 Normal { get; set; }
+    public float PenetrationDepth { get; set; }
 }

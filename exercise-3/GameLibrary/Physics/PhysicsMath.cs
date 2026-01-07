@@ -91,21 +91,18 @@ public static class PhysicsMath
         Vector2 refTan = Vector2.Normalize(referenceEdge.V2 - referenceEdge.V1);
         
         // Clipping operation
-
         float refOrigin = Vector2.Dot(referenceEdge.V1, refTan);
         float refEnd = Vector2.Dot(referenceEdge.V2, refTan);
         
-        // Clip to left
         clipPoints = ClipSegmentToLine(clipPoints, refTan, refOrigin);
         
         if (clipPoints.Count < 2) return;
-
-        // Clip to right
+        
         clipPoints = ClipSegmentToLine(clipPoints, -refTan, -refEnd);
         
         if (clipPoints.Count < 2) return;
 
-        // Filtering
+        // Check if the remaining points really within (or below) the surface of the reference edge
         float refDepth = Vector2.Dot(referenceEdge.MaxVertex, n);
 
         List<Vector2> finalContacts = new List<Vector2>();
@@ -136,7 +133,6 @@ public static class PhysicsMath
         if (info.ColliderA is IConvexPolygonCollider && info.ColliderB is CircleCollider circle)
         {
             info.ContactPoints = [circle.Position - info.Normal * circle.Radius];
-            return;
         }
     }
     
@@ -150,7 +146,9 @@ public static class PhysicsMath
         // We are looking for the vertex that lies furthest towards the normal
         for (int i = 0; i < verts.Length; i++)
         {
+            // Project every point onto the collision normal to see how far it lies in the normals direction
             float dot = Vector2.Dot(verts[i], normal);
+            
             if (dot > maxDot)
             {
                 maxDot = dot;
@@ -165,46 +163,18 @@ public static class PhysicsMath
         Vector2 leftEdge = Vector2.Normalize(v - vPrev);
         Vector2 rightEdge = Vector2.Normalize(vNext - v);
         
+        // Find edge whose normal has the smallest scalar product with the MTV
         if (Vector2.Dot(rightEdge, normal) <= Vector2.Dot(leftEdge, normal))
         {
+            // If 'right' edge is better
             return new Edge { V1 = v, V2 = vNext, MaxVertex = v };
         }
 
+        // If 'left' edge is better
         return new Edge { V1 = vPrev, V2 = v, MaxVertex = v }; 
     }
-
-    // Clipping function (cuts off points that lie "behind" the plane)
-    public static List<Vector2> Clip(List<Vector2> points, Vector2 normal, float offset)
-    {
-        List<Vector2> output = new List<Vector2>();
-        
-        if (points.Count < 2) return output;
-
-        for (int i = 0; i < points.Count; i++)
-        {
-            Vector2 v1 = points[i];
-            Vector2 v2 = points[(i + 1) % points.Count]; 
-            
-            float dist1 = Vector2.Dot(v1, normal) - offset;
-            float dist2 = Vector2.Dot(v2, normal) - offset;
-            
-            if (dist1 >= 0f) 
-            {
-                output.Add(v1);
-            }
-            
-            if (dist1 * dist2 < 0f)
-            {
-                float t = dist1 / (dist1 - dist2);
-                Vector2 intersection = v1 + (v2 - v1) * t;
-                output.Add(intersection);
-            }
-        }
-        
-        return output; 
-    }
     
-    // Specialized line clipping method
+    // Line clipping method
     public static List<Vector2> ClipSegmentToLine(List<Vector2> polygonPoints, Vector2 normal, float offset)
     {
         List<Vector2> output = new List<Vector2>();

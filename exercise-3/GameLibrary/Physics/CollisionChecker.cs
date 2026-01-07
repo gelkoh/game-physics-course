@@ -34,14 +34,13 @@ public static class CollisionChecker
                 AABB a = colA.GetAABB();
                 AABB b = colB.GetAABB();
 
+                // End of AABB checking
                 if (!AABB.intersects(a, b)) continue;
 
                 CollisionInfo info = NarrowPhaseCheck(colA, colB);
 
                 if (info.IsColliding)
-                {
                     collisionList.Add(info);
-                }
             }
         }
     }
@@ -49,55 +48,31 @@ public static class CollisionChecker
     // Check for SAT collisions
     private static CollisionInfo NarrowPhaseCheck(Collider colA, Collider colB)
     {
-        if (colA is CircleCollider circleColACC && colB is CircleCollider circleColBCC)
+        CollisionInfo info = new CollisionInfo { IsColliding = false };
+
+        if (colA is CircleCollider cA && colB is CircleCollider cB)
         {
-            var info = CheckCircleCircleCollision(circleColACC, circleColBCC);
-            
-            if (info.IsColliding)
-            {
-                PhysicsMath.FindContactPoints(ref info); 
-            }
-            
-            return info;
+            info = CheckCircleCircleCollision(cA, cB);
+        }
+        else if (colA is CircleCollider cACP && colB is IConvexPolygonCollider pBCP)
+        {
+            info = CheckCirclePolygonCollision(cACP, pBCP);
+        }
+        else if (colA is IConvexPolygonCollider pACP2 && colB is CircleCollider cBCP2)
+        {
+            info = CheckCirclePolygonCollision(cBCP2, pACP2);
+        }
+        else if (colA is IConvexPolygonCollider pAPP && colB is IConvexPolygonCollider pBPP)
+        {
+            info = CheckPolygonPolygonCollision(pAPP, pBPP);
+        }
+        
+        if (info.IsColliding)
+        {
+            PhysicsMath.FindContactPoints(ref info);
         }
 
-        if (colA is CircleCollider circleColACP && colB is IConvexPolygonCollider polygonColBCP)
-        {
-            var info = CheckCirclePolygonCollision(circleColACP, polygonColBCP);
-            
-            if (info.IsColliding)
-            {
-                PhysicsMath.FindContactPoints(ref info); 
-            }
-            
-            return info;
-        }
-
-        if (colA is IConvexPolygonCollider circleColACP2 && colB is CircleCollider circleColBCP2)
-        {
-            var info = CheckCirclePolygonCollision(circleColBCP2, circleColACP2);
-            
-            if (info.IsColliding)
-            {
-                PhysicsMath.FindContactPoints(ref info); 
-            }
-            
-            return info;
-        }
-
-        if (colA is IConvexPolygonCollider colAPP && colB is IConvexPolygonCollider colBPP)
-        {
-            var info = CheckPolygonPolygonCollision(colAPP, colBPP);
-            
-            if (info.IsColliding)
-            {
-                PhysicsMath.FindContactPoints(ref info); 
-            }
-            
-            return info;
-        }
-
-        return new CollisionInfo { IsColliding = false };
+        return info;
     }
         
     private static CollisionInfo CheckCircleCircleCollision(Collider colA, Collider colB)
@@ -195,7 +170,7 @@ public static class CollisionChecker
             Normal = smallestAxis,
             MTV = smallestAxis * minOverlap,
             ColliderA = (Collider)polygon,
-            ColliderB = circle
+            ColliderB = circle,
         };
     }
     
@@ -222,6 +197,7 @@ public static class CollisionChecker
             if (maxA < minB || maxB < minA) return new CollisionInfo { IsColliding = false };
 
             float overlap = Math.Min(maxA, maxB) - Math.Max(minA, minB);
+            
             if (overlap < minOverlap)
             {
                 minOverlap = overlap;
@@ -240,6 +216,7 @@ public static class CollisionChecker
             if (maxA < minB || maxB < minA) return new CollisionInfo { IsColliding = false };
 
             float overlap = Math.Min(maxA, maxB) - Math.Max(minA, minB);
+            
             if (overlap < minOverlap)
             {
                 minOverlap = overlap;
