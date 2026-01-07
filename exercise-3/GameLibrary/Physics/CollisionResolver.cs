@@ -6,16 +6,16 @@ namespace GameLibrary.Physics;
 
 public static class CollisionResolver
 {
-    // TODO: Update collision depth
     public static void ResolveCollisions(List<CollisionInfo> collisions, float deltaTime, Vector2 gravity)
     {
-        // We resolve the conflicts multiple times because resolving one contact can shift another
         int iterations = 4;
 
         for (int i = 0; i < iterations; i++)
         {
-            foreach (CollisionInfo info in collisions)
+            for (int k = 0; k < collisions.Count; k++)
             {
+                CollisionInfo info = collisions[k];
+
                 RigidBody bodyA = info.ColliderA?.RigidBody;
                 RigidBody bodyB = info.ColliderB?.RigidBody;
 
@@ -24,40 +24,113 @@ public static class CollisionResolver
                 float invInertiaA = bodyA?.InverseInertia ?? 0f;
                 float invInertiaB = bodyB?.InverseInertia ?? 0f;
 
-                // If both objects have an infinite mass/are static, don't do anything
                 if (invMassA + invMassB == 0f) continue;
 
-                // Position correction with linear projection
-                ApplyLinearProjection(info, bodyA, bodyB, invMassA, invMassB);
+                // Linear projection and collision depth update
+                ApplyLinearProjection(collisions, k, bodyA, bodyB, invMassA, invMassB);
 
-                // Impulse calculation, calculate physical impacts and friction
+                // Info might've changed and is a struct => retrieve again
+                info = collisions[k]; 
+
+                // Apply impulses
                 ResolveCollisions(info, bodyA, bodyB, invMassA, invMassB, invInertiaA, invInertiaB, deltaTime, gravity);
             }
         }
     }
 
-    private static void ApplyLinearProjection(CollisionInfo info, RigidBody bodyA, RigidBody bodyB, float invMassA, float invMassB)
+    private static void ApplyLinearProjection(
+        List<CollisionInfo> allCollisions, 
+        int currentIdx,
+        RigidBody bodyA, RigidBody bodyB, 
+        float invMassA, float invMassB)
     {
+        CollisionInfo info = allCollisions[currentIdx];
         float penetrationSq = info.MTV.LengthSquared();
     
-        // Ignore tiny overlaps for performance reasons
         if (penetrationSq < 0.0001f) return;
     
         float penetration = (float)Math.Sqrt(penetrationSq);
     
-        // Allow small penetration to avoid jitter and correct only part of the error per iteration, so that
-        // objects don't shoot out too much and trigger more collisions
         float slop = 0.1f;
-        float percent = 0.15f; 
+        float percent = 0.25f; 
     
-        // Calculation of the correction vector along the normal
-        Vector2 correction = info.Normal * Math.Max(penetration - slop, 0f) * percent;
-
+        // Calculation of correction vector 
+        Vector2 correctionTotal = info.Normal * Math.Max(penetration - slop, 0f) * percent;
         float totalInvMass = invMassA + invMassB;
+        
+        Vector2 moveA = Vector2.Zero;
+        Vector2 moveB = Vector2.Zero;
+
+        // Calculate actual correction
+        if (bodyA != null)
+        {
+            moveA = -correctionTotal * (invMassA / totalInvMass);
+            bodyA.GameObject.Position += moveA;
+        }
+
+        if (bodyB != null)
+        {
+            moveB = correctionTotal * (invMassB / totalInvMass);
+            bodyB.GameObject.Position += moveB;
+        }
+        
+        // Since we have "resolved" the MTV of the current collision, we reduce it
+        info.MTV = info.Normal * (penetration - correctionTotal.Length());
+        allCollisions[currentIdx] = info;
+
+        // Update all collision depths
+        UpdateCollisionDepths(allCollisions, currentIdx, bodyA, bodyB, moveA, moveB);
+    }
     
-        // Application of displacement weighted by mass
-        if (bodyA != null) bodyA.GameObject.Position -= correction * (invMassA / totalInvMass);
-        if (bodyB != null) bodyB.GameObject.Position += correction * (invMassB / totalInvMass);
+    private static void UpdateCollisionDepths(
+        List<CollisionInfo> allCollisions, 
+        int currentIdx,
+        RigidBody bodyA, RigidBody bodyB,
+        Vector2 moveA, Vector2 moveB)
+    {
+        for (int i = 0; i < allCollisions.Count; i++)
+        {
+            if (i == currentIdx) continue;
+
+            CollisionInfo other = allCollisions[i];
+
+            if (other.MTV.LengthSquared() < 0.000001f) continue;
+
+            Vector2 n = other.Normal;
+            float adjustment = 0f;
+
+            // Check if bodyA is part of this 'other' collision
+            if (other.ColliderA?.RigidBody == bodyA) 
+            {
+                adjustment += Vector2.Dot(moveA, n);
+            }
+            else if (other.ColliderB?.RigidBody == bodyA) 
+            {
+                adjustment -= Vector2.Dot(moveA, n);
+            }
+
+            // Check if bodyB is part of this 'other' collision
+            if (other.ColliderA?.RigidBody == bodyB) 
+            {
+                adjustment += Vector2.Dot(moveB, n);
+            }
+            else if (other.ColliderB?.RigidBody == bodyB) 
+            {
+                adjustment -= Vector2.Dot(moveB, n);
+            }
+
+            // Update collision depth
+            float oldDepth = other.MTV.Length();
+            float newDepth = oldDepth + adjustment;
+            
+            // No negative mtvs
+            if (newDepth < 0) newDepth = 0;
+
+            // Set new mtv vector with same direction, but new length
+            other.MTV = n * newDepth;
+            
+            allCollisions[i] = other;
+        }
     }
     
     private static void ResolveCollisions(
