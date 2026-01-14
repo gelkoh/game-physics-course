@@ -67,3 +67,7 @@ artifacts/
 # Editor settings
 .idea/
 .vscode/
+
+**/[Ll]ibrary/
+**/[Tt]emp/
+**/[Oo]bj/
